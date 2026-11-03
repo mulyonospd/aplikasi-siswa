@@ -3,12 +3,13 @@ const SUPABASE_URL = 'https://gsgovshbokckiqkfmrjy.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdzZ292c2hib2tja2lxa2Ztcmp5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTM2ODA0NzIsImV4cCI6MjEwOTI1NjQ3Mn0.LCKyoh8CpfH_IcuAg2QgG1tJH755L8MBLLb2fF6er4c';
 const ADMIN_EMAIL = 'admin@sekolah.com'; // Sesuaikan dengan email admin Anda
 
-const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+// PERBAIKAN: Menggunakan nama 'supabaseClient' agar tidak bentrok dengan library bawaan
+const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 let currentUser = null;
 
 // Cek Sesi Login saat halaman dimuat
 window.onload = async () => {
-    const { data: { session } } = await supabase.auth.getSession();
+    const { data: { session } } = await supabaseClient.auth.getSession();
     if (session) {
         currentUser = session.user;
         showDashboard();
@@ -22,7 +23,7 @@ async function handleLogin(e) {
     const password = document.getElementById('password').value;
     const errorEl = document.getElementById('loginError');
 
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
 
     if (error) {
         errorEl.textContent = error.message;
@@ -35,7 +36,7 @@ async function handleLogin(e) {
 
 // Fungsi Logout
 async function logout() {
-    await supabase.auth.signOut();
+    await supabaseClient.auth.signOut();
     currentUser = null;
     window.location.reload();
 }
@@ -58,7 +59,7 @@ function showDashboard() {
 
 // Mengambil Data dari Supabase
 async function fetchStudents() {
-    const { data: students, error } = await supabase.from('students').select('*').order('created_at', { ascending: false });
+    const { data: students, error } = await supabaseClient.from('students').select('*').order('created_at', { ascending: false });
     
     if (error) return console.error('Error fetching data:', error);
 
@@ -96,10 +97,10 @@ async function handleSaveData(e) {
 
     if (id) {
         // Mode Update
-        await supabase.from('students').update({ nis, nama, kelas }).eq('id', id);
+        await supabaseClient.from('students').update({ nis, nama, kelas }).eq('id', id);
     } else {
         // Mode Insert
-        await supabase.from('students').insert([{ nis, nama, kelas }]);
+        await supabaseClient.from('students').insert([{ nis, nama, kelas }]);
     }
 
     document.getElementById('studentForm').reset();
@@ -120,7 +121,7 @@ function editStudent(id, nis, nama, kelas) {
 // Hapus Data
 async function deleteStudent(id) {
     if(confirm('Yakin ingin menghapus data ini?')) {
-        await supabase.from('students').delete().eq('id', id);
+        await supabaseClient.from('students').delete().eq('id', id);
         fetchStudents();
     }
 }
